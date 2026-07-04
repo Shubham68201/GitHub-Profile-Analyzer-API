@@ -1,4 +1,4 @@
-import pool from '../config/db.js';
+import pool from "../config/db.js";
 
 /**
  * Insert a newly analyzed profile, or update it if it already exists
@@ -52,9 +52,12 @@ export const upsertProfile = async (profile) => {
     profile.mostUsedLanguage,
     JSON.stringify(profile.topLanguages || []),
     profile.accountCreatedAt
-      ? new Date(profile.accountCreatedAt).toISOString().slice(0, 19).replace('T', ' ')
+      ? new Date(profile.accountCreatedAt)
+          .toISOString()
+          .slice(0, 19)
+          .replace("T", " ")
       : null,
-    profile.accountAgeDays
+    profile.accountAgeDays,
   ];
 
   await pool.execute(sql, params);
@@ -65,39 +68,53 @@ const parseRow = (row) => {
   return {
     ...row,
     top_languages:
-      typeof row.top_languages === 'string'
+      typeof row.top_languages === "string"
         ? JSON.parse(row.top_languages)
-        : row.top_languages
+        : row.top_languages,
   };
 };
 
-export const findAllProfiles = async ({ limit = 50, offset = 0, sortBy = 'last_analyzed_at', order = 'DESC' } = {}) => {
-  const allowedSort = new Set(['followers', 'public_repos', 'total_stars', 'last_analyzed_at', 'created_at', 'username']);
-  const sortColumn = allowedSort.has(sortBy) ? sortBy : 'last_analyzed_at';
-  const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+export const findAllProfiles = async ({
+  limit = 50,
+  offset = 0,
+  sortBy = "last_analyzed_at",
+  order = "DESC",
+} = {}) => {
+  const allowedSort = new Set([
+    "followers",
+    "public_repos",
+    "total_stars",
+    "last_analyzed_at",
+    "created_at",
+    "username",
+  ]);
+  const sortColumn = allowedSort.has(sortBy) ? sortBy : "last_analyzed_at";
+  const sortOrder = order.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
   const [rows] = await pool.query(
     `SELECT * FROM profiles ORDER BY ${sortColumn} ${sortOrder} LIMIT ? OFFSET ?`,
-    [Number(limit), Number(offset)]
+    [Number(limit), Number(offset)],
   );
 
-  const [[{ total }]] = await pool.query('SELECT COUNT(*) as total FROM profiles');
+  const [[{ total }]] = await pool.query(
+    "SELECT COUNT(*) as total FROM profiles",
+  );
 
   return { rows: rows.map(parseRow), total };
 };
 
 export const findProfileByUsername = async (username) => {
   const [rows] = await pool.execute(
-    'SELECT * FROM profiles WHERE username = ? LIMIT 1',
-    [username]
+    "SELECT * FROM profiles WHERE LOWER(username) = LOWER(?) LIMIT 1",
+    [username],
   );
   return parseRow(rows[0]);
 };
 
 export const deleteProfileByUsername = async (username) => {
   const [result] = await pool.execute(
-    'DELETE FROM profiles WHERE username = ?',
-    [username]
+    "DELETE FROM profiles WHERE LOWER(username) = LOWER(?)",
+    [username],
   );
   return result.affectedRows > 0;
 };
