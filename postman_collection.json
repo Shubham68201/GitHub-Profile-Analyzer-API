@@ -1,0 +1,48 @@
+{
+  "info": {
+    "name": "GitHub Profile Analyzer API",
+    "description": "Endpoints for analyzing GitHub profiles and reading stored insights.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "username", "value": "torvalds" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/"
+      }
+    },
+    {
+      "name": "Analyze a GitHub profile",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/profiles/{{username}}/analyze"
+      }
+    },
+    {
+      "name": "Get all analyzed profiles",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/profiles?limit=50&offset=0&sortBy=last_analyzed_at&order=DESC"
+      }
+    },
+    {
+      "name": "Get a single profile",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/profiles/{{username}}"
+      }
+    },
+    {
+      "name": "Delete a profile",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/profiles/{{username}}"
+      }
+    }
+  ]
+}
